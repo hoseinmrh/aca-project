@@ -39,11 +39,12 @@ class Abstract_GNN(torch.nn.Module):
         self.readout = readout
 
     def _reset_parameters(self):
+        # Make parameter initialization deterministic when seed is set
         for p in self.parameters():
             if p.dim() > 1:
-                nn.init.xavier_uniform_(p)
+                nn.init.xavier_uniform_(p, gain=nn.init.calculate_gain('relu'))
             else:
-                nn.init.uniform_(p)
+                nn.init.uniform_(p, -0.1, 0.1)
 
     def forward(self, data, edge_index, batch):
         raise NotImplementedError

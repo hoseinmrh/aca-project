@@ -1,0 +1,15 @@
+[
+    {
+        "Accuracy": 0.773,
+        "Precision": 0.552,
+        "Recall": 0.889,
+        "F1": 0.681,
+        "Parameters": 77410,
+        "ModelSizeMB": 0.299,
+        "PeakMemoryMB": 166.354,
+        "InferenceLatencyMS": 0.556,
+        "TrainingTimeTotal": 66.08,
+        "TrainingTimePerEpoch": 2.203,
+        "Model": "EnhancedProtein_Medium"
+    }
+]

@@ -351,3 +351,6 @@ cython_debug/
 PROTEINS/
 
 *.pyc
+models/
+*.pt
+*.csv

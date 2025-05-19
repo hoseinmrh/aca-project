@@ -6,3 +6,4 @@ tqdm
 torch-geometric
 networkx
 matplotlib
+seaborn
