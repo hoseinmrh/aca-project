@@ -11,6 +11,7 @@ def train(model, optimizer, train_loader, val_loader, args):
     t = time.time()
     best_val_acc = 0.0
     for epoch in range(args.epochs):
+        best_epoch += 1
         model.train()
         loss_train = 0.0
         correct = 0
@@ -30,7 +31,6 @@ def train(model, optimizer, train_loader, val_loader, args):
         val_loss_values.append(loss_val)
         if acc_val > best_val_acc:
             best_val_acc = acc_val
-            best_epoch = epoch
             best_model_state = model.state_dict()
             patience_cnt = 0
         else:

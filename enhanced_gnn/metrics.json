@@ -1,11 +1,9 @@
-[
-    {
-        "Accuracy": 0.806,
-        "Parameters": 306370,
-        "ModelSizeMB": 1.176,
-        "PeakMemoryMB": 235.317,
-        "InferenceLatencyMS": 1.21,
-        "TrainingTimeTotal": 84.457,
-        "TrainingTimePerEpoch": 2.815
-    }
-]
+{
+    "Accuracy": 0.804,
+    "Parameters": 306370,
+    "ModelSizeMB": 1.176,
+    "PeakMemoryMB": 235.317,
+    "InferenceLatencyMS": 0.98,
+    "TrainingTimeTotal": 65.443,
+    "TrainingTimePerEpoch": 1.109
+}

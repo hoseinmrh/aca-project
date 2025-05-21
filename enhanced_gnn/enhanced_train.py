@@ -41,9 +41,10 @@ def enhanced_train(model, train_loader, val_loader, device, patience=30, max_epo
     train_losses = []
     val_losses = []
     val_accs = []
-    
+    number_of_epochs = 0
     # Main training loop
     for epoch in range(max_epochs):
+        number_of_epochs += 1
         model.train()
         epoch_train_loss = 0
         for i, data in enumerate(train_loader):
@@ -98,7 +99,7 @@ def enhanced_train(model, train_loader, val_loader, device, patience=30, max_epo
     print(f"Training complete. Best model at epoch {best_metric_epoch} with "
           f"Val Loss: {best_val_loss:.4f}, Val Acc: {best_metric:.4f}")
     
-    return best_model
+    return best_model, number_of_epochs
 
 # Reuse the validate_model and test_model functions from the original train.py
 def validate_model(model, val_loader, device):

@@ -39,10 +39,10 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     print("Initializing EnhancedProtein model...")
     model_params = {
         'num_nodes': dataset.num_node_features,
-        'hidden_dim': 128,  # Medium dimension
+        'hidden_dim': 128, 
         'num_classes': dataset.num_classes,
         'k': 5, 
-        'readout': 'meanmax',  # Enhanced readout
+        'readout': 'meanmax', 
         'dropout': 0.3
     }
     model = EnhancedProteinGNN(**model_params).to(device)
@@ -64,7 +64,7 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     # Train the model with progress tracking
     print("\nStarting training...")
     start_time = time.time()
-    trained_model = enhanced_train(model, train_loader, val_loader, device, patience=30, max_epochs=300)
+    trained_model, number_of_epochs = enhanced_train(model, train_loader, val_loader, device, patience=30, max_epochs=300)
     total_time = time.time() - start_time
     print(f"Training completed in {total_time:.2f} seconds")
     
@@ -76,9 +76,6 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     print("\n" + "="*50)
     print("FINAL MODEL PERFORMANCE:")
     print(f"Accuracy:  {accuracy:.4f}")
-    print(f"Precision: {precision:.4f}")
-    print(f"Recall:    {recall:.4f}")
-    print(f"F1 Score:  {f1:.4f}")
     print("="*50)
     
     # Generate detailed classification report
@@ -101,20 +98,7 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     target_names = ['Non-Enzyme', 'Enzyme']
     print(classification_report(y_true, y_pred, target_names=target_names))
     
-    # Generate confusion matrix
-    cm = confusion_matrix(y_true, y_pred)
-    
-    if plot_results:
-        # Plot confusion matrix
-        plt.figure(figsize=(10, 8))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
-                    xticklabels=target_names, yticklabels=target_names)
-        plt.xlabel('Predicted')
-        plt.ylabel('Actual')
-        plt.title('Confusion Matrix')
-        plt.tight_layout()
-        plt.savefig('confusion_matrix.png', dpi=300)
-        print("Confusion matrix saved to 'confusion_matrix.png'")
+
     
     # Calculate inference latency
     print("\nMeasuring inference latency...")
@@ -153,7 +137,7 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
         # Time metrics
         'InferenceLatencyMS': avg_inference_time * 1000,  # Convert to milliseconds
         'TrainingTimeTotal': total_time,
-        'TrainingTimePerEpoch': total_time / (30 if total_time < 100 else 10),  # Estimate based on early stopping
+        'TrainingTimePerEpoch': total_time / (number_of_epochs if number_of_epochs > 0 else 1),  # Estimate based on early stopping
     }
     
     # Save metrics to JSON
@@ -226,30 +210,12 @@ def save_metrics_to_json(metrics, model_name, file_path="model_metrics.json"):
         else:
             rounded_metrics[key] = value
     
-    # Check if file exists to update or create
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            try:
-                all_metrics = json.load(f)
-            except json.JSONDecodeError:
-                all_metrics = []
-    else:
-        all_metrics = []
     
-    # Check if this model is already in the metrics
-    updated = False
-    for i, m in enumerate(all_metrics):
-        if m.get('Model') == model_name:
-            all_metrics[i] = rounded_metrics
-            updated = True
-            break
-    
-    if not updated:
-        all_metrics.append(rounded_metrics)
+
     
     # Save to file
     with open(file_path, 'w') as f:
-        json.dump(all_metrics, f, indent=4)
+        json.dump(rounded_metrics, f, indent=4)
     
     print(f"Metrics saved to {file_path}")
 
@@ -290,115 +256,7 @@ def predict_protein(model, protein_data, device=None):
     return pred_class, class_name, confidence
 
 if __name__ == "__main__":
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='Train or use the optimal protein classification model')
-    parser.add_argument('--train', action='store_true', help='Train a new model')
-    parser.add_argument('--evaluate', action='store_true', help='Evaluate the saved model')
-    parser.add_argument('--model_path', type=str, default='optimal_protein_model.pt', 
-                        help='Path to save/load the model')
-    parser.add_argument('--seed', type=int, default=42, 
-                        help='Random seed for reproducible results')
-    
-    args = parser.parse_args()
-    
-    if args.train:
-        # Train a new model
-        train_optimal_protein_model(save_model=True, plot_results=True, seed=args.seed)
-    elif args.evaluate:
-        # Load and evaluate the model
-        set_seed(args.seed)  # Set seed for evaluation too
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        model = load_optimal_model(args.model_path)
-        
-        if model is not None:
-            # Load test data
-            dataset, _, _, test_dataset = load_protein_dataset()
-            # Fix: Create test_loader properly without requiring train/val datasets
-            test_loader = torch.utils.data.DataLoader(
-                test_dataset,
-                batch_size=32,
-                shuffle=False
-            )
-            
-            # Evaluate
-            model = model.to(device)
-            start_time = time.time()
-            accuracy, precision, recall, f1 = test_model(model, test_loader, device)
-            eval_time = time.time() - start_time
-            
-            print("\nEvaluation on test set:")
-            print(f"Accuracy:  {accuracy:.4f}")
-            print(f"Precision: {precision:.4f}")
-            print(f"Recall:    {recall:.4f}")
-            print(f"F1 Score:  {f1:.4f}")
-            
-            # Measure inference latency
-            print("\nMeasuring inference latency...")
-            inference_times = []
-            model.eval()
-            with torch.no_grad():
-                for data in test_loader:
-                    x = data.x.to(device)
-                    edge_index = data.edge_index.to(device)
-                    batch = data.batch.to(device)
-                    
-                    torch.cuda.synchronize() if device.type == 'cuda' else None
-                    start = time.time()
-                    _ = model(x, edge_index, batch)
-                    torch.cuda.synchronize() if device.type == 'cuda' else None
-                    end = time.time()
-                    
-                    # Calculate time per graph
-                    batch_size = batch[-1].item() + 1
-                    inference_times.append((end - start) / batch_size)
-            
-            avg_inference_time = sum(inference_times) / len(inference_times)
-            print(f"Average inference time: {avg_inference_time*1000:.4f} ms per graph")
-            
-            # Get model parameter count
-            param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
-            
-            # Get model size in MB
-            param_size_bytes = 0
-            for param in model.parameters():
-                param_size_bytes += param.nelement() * param.element_size()
-            buffer_size = 0
-            for buffer in model.buffers():
-                buffer_size += buffer.nelement() * buffer.element_size()
-            size_mb = (param_size_bytes + buffer_size) / 1024**2
-            
-            # Collect memory usage - this will only be peak during evaluation, not training
-            peak_memory = torch.cuda.max_memory_allocated(device) / 1024**2 if device.type == 'cuda' else 0
-            
-            # Load the checkpoint to get training metrics if available
-            try:
-                checkpoint = torch.load(args.model_path)
-                training_time = checkpoint.get('all_metrics', {}).get('TrainingTimeTotal', 0)
-            except:
-                training_time = 0
-            
-            # Collect all metrics
-            eval_metrics = {
-                # Performance metrics
-                'Accuracy': accuracy,
-                # Model size metrics
-                'Parameters': param_count,
-                'ModelSizeMB': size_mb,
-                
-                # Memory usage metrics
-                'PeakMemoryMB': peak_memory,
-                
-                # Time metrics
-                'InferenceLatencyMS': avg_inference_time * 1000,  # Convert to milliseconds
-                'EvaluationTime': eval_time,
-                'TrainingTimeTotal': training_time
-            }
-            
-            # Save metrics to JSON
-            save_metrics_to_json(eval_metrics, "EnhancedProtein_Medium_Eval", "evaluation_metrics.json")
-    else:
-        print("Please specify either --train or --evaluate")
-        print("Example usage:")
-        print("  python optimal_protein_model.py --train")
-        print("  python optimal_protein_model.py --evaluate")
+
+    # Train a new model
+    train_optimal_protein_model(save_model=True, plot_results=True, seed=42)
+
