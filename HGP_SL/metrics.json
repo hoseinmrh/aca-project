@@ -1,10 +1,10 @@
 {
-    "Accuracy": 0.8303571428571429,
-    "NumEpochs": 153,
-    "TrainingTimeTotal": 85.8962049484253,
-    "TrainingTimePerEpoch": 0.5614131042380738,
-    "PeakMemoryMB": 925.521484375,
+    "Accuracy": 0.8392857142857143,
+    "NumEpochs": 195,
+    "TrainingTimeTotal": 71.71766996383667,
+    "TrainingTimePerEpoch": 0.3677829228914701,
+    "PeakMemoryMB": 947.61962890625,
     "NumberOfParameters": 75458,
     "ModelSizeMB": 0.28784942626953125,
-    "InferenceLatencyMS": 24.445056915283203
+    "InferenceLatencyMS": 28.957128524780273
 }
