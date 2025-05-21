@@ -11,7 +11,7 @@ import time
 import argparse
 from set_seed import set_seed
 from dataset import load_protein_dataset, get_dataloaders
-from enhanced_protein_gnn import EnhancedProteinGNN
+from enhanced_gnn.enhanced_protein_gnn import EnhancedProteinGNN
 from enhanced_train import test_model
 
 def test_reproducibility(seed=42):

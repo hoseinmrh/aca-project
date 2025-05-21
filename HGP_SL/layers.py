@@ -1,5 +1,4 @@
 # protein_gnn/layers.py
-# Custom GNN layers and HGPSLPool, adapted from HGP-SL/layers.py
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,7 +7,7 @@ from torch_geometric.data import Data
 from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.utils import softmax, dense_to_sparse, add_remaining_self_loops
 from torch_scatter import scatter_add
-from .sparse_softmax import Sparsemax
+from sparse_softmax import Sparsemax
 
 def topk(x, ratio, batch):
     """Selects top-k nodes per graph in a batch."""

@@ -1,10 +1,7 @@
 # protein_gnn/train.py
 # Training and evaluation logic for protein GNN
 import time
-import torch
 import torch.nn.functional as F
-from torch_geometric.data import DataLoader
-from .models import ProteinGNN
 
 def train(model, optimizer, train_loader, val_loader, args):
     min_loss = float('inf')

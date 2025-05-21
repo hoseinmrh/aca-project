@@ -4,9 +4,9 @@ import os
 import torch
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
-from protein_gnn.config import get_config
-from protein_gnn.models import ProteinGNN
-from protein_gnn.train import train, evaluate
+from config import get_config
+from models import ProteinGNN
+from train import train, evaluate
 # Inference latency (ms per batch)
 import numpy as np
 
@@ -69,9 +69,9 @@ def main():
         'ModelSizeMB': model_size_mb,
         'InferenceLatencyMS': inference_latency_ms
     }
-    with open('protein_gnn_test_metrics.json', 'w') as f:
+    with open('metrics.json', 'w') as f:
         json.dump(metrics, f, indent=4)
-    print('Test metrics saved to protein_gnn_test_metrics.json')
+    print('Test metrics saved to metrics.json')
 
 if __name__ == '__main__':
     main()

@@ -9,7 +9,6 @@ from gin import GIN
 from gat import GAT
 from chebnet import ChebC, ChebEdge
 from train import train, test_model
-from gcn_gat_hybrid import GCN_GAT_Hybrid
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -111,25 +110,25 @@ if __name__ == "__main__":
 
     # # ChebNet
     chebFilterSize = 16
-    # ChebC_ = ChebC(dataset.num_node_features, 64, dataset.num_classes, chebFilterSize, readout='sum')
-    # model_size = count_parameters(ChebC_)
-    # get_peak_memory = measure_peak_memory(device)
-    # chebModel = train(ChebC_, train_loader, val_loader, device)
-    # peak_memory = get_peak_memory()
-    # inf_latency = measure_inference_latency(chebModel, test_loader, device)
-    # cheb_accuracy, cheb_precision, cheb_recall, cheb_f1 = test_model(chebModel, test_loader, device)
-    # metrics.append({
-    #     'Model': 'ChebNet',
-    #     'Parameters': model_size,
-    #     'PeakMemoryMB': peak_memory,
-    #     'InferenceLatency': inf_latency,
-    #     'TrainTimePerEpochSec': None,
-    #     'Epochs': None,
-    #     'Accuracy': cheb_accuracy,
-    #     'Precision': cheb_precision,
-    #     'Recall': cheb_recall,
-    #     'F1': cheb_f1
-    # })
+    ChebC_ = ChebC(dataset.num_node_features, 64, dataset.num_classes, chebFilterSize, readout='sum')
+    model_size = count_parameters(ChebC_)
+    get_peak_memory = measure_peak_memory(device)
+    chebModel = train(ChebC_, train_loader, val_loader, device)
+    peak_memory = get_peak_memory()
+    inf_latency = measure_inference_latency(chebModel, test_loader, device)
+    cheb_accuracy, cheb_precision, cheb_recall, cheb_f1 = test_model(chebModel, test_loader, device)
+    metrics.append({
+        'Model': 'ChebNet',
+        'Parameters': model_size,
+        'PeakMemoryMB': peak_memory,
+        'InferenceLatency': inf_latency,
+        'TrainTimePerEpochSec': None,
+        'Epochs': None,
+        'Accuracy': cheb_accuracy,
+        'Precision': cheb_precision,
+        'Recall': cheb_recall,
+        'F1': cheb_f1
+    })
 
     # # ChebNet + EdgeConv
     ChebEdge_ = ChebEdge(dataset.num_node_features, 64, dataset.num_classes, chebFilterSize, readout='mean')
@@ -152,28 +151,7 @@ if __name__ == "__main__":
         'F1': cheb_edge_f1
     })
 
-    # # GCN-GAT Hybrid
-    # Hybrid_ = GCN_GAT_Hybrid(dataset.num_node_features, 48, dataset.num_classes, readout='sum', dropout=0.3, num_heads=4)
-    # model_size = count_parameters(Hybrid_)
-    # get_peak_memory = measure_peak_memory(device)
-    # hybridModel = train(Hybrid_, train_loader, val_loader, device)
-    # peak_memory = get_peak_memory()
-    # inf_latency = measure_inference_latency(hybridModel, test_loader, device)
-    # hybrid_accuracy, hybrid_precision, hybrid_recall, hybrid_f1 = test_model(hybridModel, test_loader, device)
-    # hybrid_metrics = {
-    #     'Model': 'GCN-GAT Hybrid',
-    #     'Parameters': model_size,
-    #     'PeakMemoryMB': peak_memory,
-    #     'InferenceLatency': inf_latency,
-    #     'TrainTimePerEpochSec': None,
-    #     'Epochs': None,
-    #     'Accuracy': hybrid_accuracy,
-    #     'Precision': hybrid_precision,
-    #     'Recall': hybrid_recall,
-    #     'F1': hybrid_f1
-    # }
-    # # Save hybrid metrics to a new CSV
-    # pd.DataFrame([hybrid_metrics]).to_csv('hybrid_model_metrics.csv', index=False)
+
 
     # Save metrics to CSV
     df = pd.DataFrame(metrics)

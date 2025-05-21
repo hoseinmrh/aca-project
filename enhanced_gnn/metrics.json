@@ -1,0 +1,11 @@
+[
+    {
+        "Accuracy": 0.806,
+        "Parameters": 306370,
+        "ModelSizeMB": 1.176,
+        "PeakMemoryMB": 235.317,
+        "InferenceLatencyMS": 1.21,
+        "TrainingTimeTotal": 84.457,
+        "TrainingTimePerEpoch": 2.815
+    }
+]

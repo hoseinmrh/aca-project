@@ -2,10 +2,8 @@ import torch
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 import json
-from torch_geometric.loader import DataLoader
 from dataset import load_protein_dataset, get_dataloaders
 from enhanced_protein_gnn import EnhancedProteinGNN
 from enhanced_train import enhanced_train, test_model
@@ -41,7 +39,7 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     print("Initializing EnhancedProtein model...")
     model_params = {
         'num_nodes': dataset.num_node_features,
-        'hidden_dim': 64,  # Medium dimension
+        'hidden_dim': 128,  # Medium dimension
         'num_classes': dataset.num_classes,
         'k': 5, 
         'readout': 'meanmax',  # Enhanced readout
@@ -144,11 +142,7 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     # Collect all metrics in a single dictionary
     all_metrics = {
         # Performance metrics
-        'Accuracy': accuracy,
-        'Precision': precision,
-        'Recall': recall,
-        'F1': f1,
-        
+        'Accuracy': accuracy,    
         # Model size metrics
         'Parameters': param_size,
         'ModelSizeMB': size_mb,
@@ -163,7 +157,7 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     }
     
     # Save metrics to JSON
-    save_metrics_to_json(all_metrics, "EnhancedProtein_Medium", "complete_metrics.json")
+    save_metrics_to_json(all_metrics, "EnhancedProtein_Medium", "metrics.json")
     
     # Save the model
     if save_model:
@@ -231,9 +225,6 @@ def save_metrics_to_json(metrics, model_name, file_path="model_metrics.json"):
                 rounded_metrics[key] = round(value, 3)
         else:
             rounded_metrics[key] = value
-    
-    # Add model name
-    rounded_metrics["Model"] = model_name
     
     # Check if file exists to update or create
     if os.path.exists(file_path):
@@ -391,10 +382,6 @@ if __name__ == "__main__":
             eval_metrics = {
                 # Performance metrics
                 'Accuracy': accuracy,
-                'Precision': precision,
-                'Recall': recall,
-                'F1': f1,
-                
                 # Model size metrics
                 'Parameters': param_count,
                 'ModelSizeMB': size_mb,
