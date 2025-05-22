@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import ChebConv, EdgeConv, global_mean_pool, global_max_pool, PairNorm
+from torch_geometric.nn import ChebConv, EdgeConv,PairNorm
 from base import Abstract_GNN, graph_readout
 
 class EnhancedProteinGNN(Abstract_GNN):
