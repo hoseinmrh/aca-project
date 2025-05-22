@@ -1,0 +1,14 @@
+{
+    "BalancedAccuracy": 0.7551169590643274,
+    "Accuracy": 0.7767857142857143,
+    "Precision": 0.6410256410256411,
+    "Recall": 0.6944444444444444,
+    "F1": 0.6666666666666666,
+    "NumEpochs": 160,
+    "TrainingTimeTotal": 177.38190388679504,
+    "TrainingTimePerEpoch": 1.1086368992924691,
+    "PeakMemoryMB": 752.8515625,
+    "NumberOfParameters": 8938242,
+    "ModelSizeMB": 34.09668731689453,
+    "InferenceLatencyMS": 0.4305839538574219
+}
