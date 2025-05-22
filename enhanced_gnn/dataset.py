@@ -1,3 +1,4 @@
+from json import load
 import torch
 from torch_geometric.datasets import TUDataset
 from torch_geometric.loader import DataLoader
@@ -10,6 +11,8 @@ def load_protein_dataset(seed=None):
     
     # Load dataset
     dataset = TUDataset(root='.', name='PROTEINS')
+
+
     
     # Shuffle with fixed seed if provided
     if generator is not None:

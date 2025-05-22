@@ -1,10 +1,14 @@
 {
-    "Accuracy": 0.8482142857142857,
-    "NumEpochs": 341,
-    "TrainingTimeTotal": 76.92605352401733,
-    "TrainingTimePerEpoch": 0.22558959977717694,
-    "PeakMemoryMB": 947.619140625,
+    "BalancedAccuracy": 0.8450226244343891,
+    "Accuracy": 0.8303571428571429,
+    "Precision": 0.6666666666666666,
+    "Recall": 0.8823529411764706,
+    "F1": 0.759493670886076,
+    "NumEpochs": 264,
+    "TrainingTimeTotal": 67.23732113838196,
+    "TrainingTimePerEpoch": 0.25468682249387103,
+    "PeakMemoryMB": 925.521484375,
     "NumberOfParameters": 75458,
     "ModelSizeMB": 0.28784942626953125,
-    "InferenceLatencyMS": 17.1205997467041
+    "InferenceLatencyMS": 0.24057073252541677
 }

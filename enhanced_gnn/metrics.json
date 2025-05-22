@@ -1,9 +1,14 @@
 {
-    "Accuracy": 0.804,
-    "Parameters": 306370,
-    "ModelSizeMB": 1.176,
+    "BalancedAccuracy": 0.803,
+    "Accuracy": 0.812,
+    "Precision": 0.683,
+    "Recall": 0.778,
+    "F1": 0.727,
+    "NumEpochs": 57,
+    "TrainingTimeTotal": 65.291,
+    "TrainingTimePerEpoch": 1.145,
     "PeakMemoryMB": 235.317,
-    "InferenceLatencyMS": 0.98,
-    "TrainingTimeTotal": 65.443,
-    "TrainingTimePerEpoch": 1.109
+    "NumberOfParameters": 306370,
+    "ModelSizeMB": 1.176,
+    "InferenceLatencyMS": 0.972
 }

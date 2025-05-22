@@ -1,14 +1,10 @@
 import torch
-import pandas as pd
 import time
-import matplotlib.pyplot as plt
 import os
 import json
 from dataset import load_protein_dataset, get_dataloaders
 from enhanced_protein_gnn import EnhancedProteinGNN
 from enhanced_train import enhanced_train, test_model
-from sklearn.metrics import confusion_matrix, classification_report
-import seaborn as sns
 from set_seed import set_seed
 
 def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
@@ -36,7 +32,6 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     train_loader, val_loader, test_loader = get_dataloaders(train_dataset, val_dataset, test_dataset, batch_size=32, seed=seed)
     
     # Initialize the best model (EnhancedProtein_Medium)
-    print("Initializing EnhancedProtein model...")
     model_params = {
         'num_nodes': dataset.num_node_features,
         'hidden_dim': 128, 
@@ -70,38 +65,9 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     
     # Evaluate the model on test set
     print("\nEvaluating model on test set...")
-    accuracy, precision, recall, f1 = test_model(trained_model, test_loader, device)
-    
-    # Print metrics
-    print("\n" + "="*50)
-    print("FINAL MODEL PERFORMANCE:")
-    print(f"Accuracy:  {accuracy:.4f}")
-    print("="*50)
-    
-    # Generate detailed classification report
-    print("\nDetailed Classification Report:")
-    y_pred = []
-    y_true = []
-    trained_model.eval()
-    with torch.no_grad():
-        for data in test_loader:
-            x = data.x.to(device)
-            edge_index = data.edge_index.to(device)
-            batch = data.batch.to(device)
-            
-            out = trained_model(x, edge_index, batch)
-            pred = out.argmax(dim=1).cpu().numpy()
-            y_pred.extend(pred)
-            y_true.extend(data.y.cpu().numpy())
-    
-    # Print classification report
-    target_names = ['Non-Enzyme', 'Enzyme']
-    print(classification_report(y_true, y_pred, target_names=target_names))
-    
+    balanced_accuracy, precision, recall, f1, accuracy = test_model(trained_model, test_loader, device)
 
-    
-    # Calculate inference latency
-    print("\nMeasuring inference latency...")
+
     inference_times = []
     trained_model.eval()
     with torch.no_grad():
@@ -126,18 +92,23 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     # Collect all metrics in a single dictionary
     all_metrics = {
         # Performance metrics
+        'BalancedAccuracy': balanced_accuracy,
         'Accuracy': accuracy,    
+        'Precision': precision,
+        'Recall': recall,
+        'F1': f1,
         # Model size metrics
-        'Parameters': param_size,
-        'ModelSizeMB': size_mb,
-        
+        'NumEpochs': number_of_epochs,
+        'TrainingTimeTotal': total_time,
+        'TrainingTimePerEpoch': total_time / (number_of_epochs if number_of_epochs > 0 else 1),  # Estimate based on early stopping
         # Memory usage metrics
         'PeakMemoryMB': torch.cuda.max_memory_allocated(device) / 1024**2 if device.type == 'cuda' else 0,
+        'NumberOfParameters': param_size,
+        'ModelSizeMB': size_mb,
+        
         
         # Time metrics
         'InferenceLatencyMS': avg_inference_time * 1000,  # Convert to milliseconds
-        'TrainingTimeTotal': total_time,
-        'TrainingTimePerEpoch': total_time / (number_of_epochs if number_of_epochs > 0 else 1),  # Estimate based on early stopping
     }
     
     # Save metrics to JSON
@@ -161,7 +132,6 @@ def train_optimal_protein_model(save_model=True, plot_results=True, seed=42):
     # Return the model and metrics
     return trained_model, all_metrics
 
-def load_optimal_model(model_path='optimal_protein_model.pt'):
     """
     Load the optimal trained model
     
@@ -182,11 +152,7 @@ def load_optimal_model(model_path='optimal_protein_model.pt'):
     # Initialize the model
     model = EnhancedProteinGNN(**model_params)
     model.load_state_dict(checkpoint['model_state_dict'])
-    
-    print(f"Loaded model with metrics:")
-    print(f"Accuracy:  {checkpoint['accuracy']:.4f}")
-    print(f"F1 Score:  {checkpoint['f1']:.4f}")
-    print(f"Inference: {checkpoint['inference_time_ms']:.4f} ms per graph")
+
     
     return model
 
@@ -219,44 +185,8 @@ def save_metrics_to_json(metrics, model_name, file_path="model_metrics.json"):
     
     print(f"Metrics saved to {file_path}")
 
-def predict_protein(model, protein_data, device=None):
-    """
-    Make a prediction for a single protein graph
-    
-    Args:
-        model: The trained model
-        protein_data: A PyG data object representing the protein
-        device: The device to use for inference
-    
-    Returns:
-        The predicted class (0=Non-Enzyme, 1=Enzyme) and confidence
-    """
-    if device is None:
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
-    model = model.to(device)
-    model.eval()
-    
-    with torch.no_grad():
-        x = protein_data.x.to(device)
-        edge_index = protein_data.edge_index.to(device)
-        
-        # Create a batch with just one graph
-        batch = torch.zeros(x.size(0), dtype=torch.long).to(device)
-        
-        # Get prediction
-        out = model(x, edge_index, batch)
-        probabilities = torch.nn.functional.softmax(out, dim=1)
-        
-        # Get the predicted class and confidence
-        pred_class = out.argmax(dim=1).item()
-        confidence = probabilities[0, pred_class].item()
-        
-    class_name = "Enzyme" if pred_class == 1 else "Non-Enzyme"
-    return pred_class, class_name, confidence
-
 if __name__ == "__main__":
 
     # Train a new model
-    train_optimal_protein_model(save_model=True, plot_results=True, seed=42)
+    train_optimal_protein_model(save_model=False, plot_results=False, seed=42)
 

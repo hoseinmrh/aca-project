@@ -1,5 +1,4 @@
-# protein_gnn/models.py
-# Model definition for protein classification with HGP-SL
+
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp

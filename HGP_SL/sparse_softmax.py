@@ -1,5 +1,3 @@
-# protein_gnn/sparse_softmax.py
-# Copied and adapted from HGP-SL/sparse_softmax.py
 import torch
 import torch.nn as nn
 from torch.autograd import Function

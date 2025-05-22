@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from sklearn.metrics import balanced_accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import balanced_accuracy_score, precision_score, recall_score, f1_score, accuracy_score
 from copy import deepcopy
 from tqdm import tqdm
 import torch.nn as nn
@@ -138,8 +138,9 @@ def test_model(model, test_loader, device):
         labels.append(label.cpu().numpy())
     preds = np.concatenate(preds).ravel()
     labels = np.concatenate(labels).ravel()
-    accuracy = balanced_accuracy_score(labels, preds)
+    balanced_accuracy = balanced_accuracy_score(labels, preds)
     precision = precision_score(labels, preds)
     recall = recall_score(labels, preds)
     f1 = f1_score(labels, preds)
-    return accuracy, precision, recall, f1
+    accuracy = accuracy_score(labels, preds)
+    return balanced_accuracy, precision, recall, f1, accuracy

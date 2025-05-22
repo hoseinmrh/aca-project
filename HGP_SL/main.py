@@ -1,5 +1,3 @@
-# main.py
-# Entry point for protein GNN classification with HGP-SL
 import os
 import torch
 from torch_geometric.datasets import TUDataset
@@ -7,7 +5,7 @@ from torch_geometric.data import DataLoader
 from config import get_config
 from models import ProteinGNN
 from train import train, evaluate
-# Inference latency (ms per batch)
+from sklearn.metrics import balanced_accuracy_score, precision_score, recall_score, f1_score, accuracy_score
 import numpy as np
 
 def main():
@@ -30,8 +28,8 @@ def main():
     model = ProteinGNN(args).to(args.device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     start_time = time.time()
-    best_epoch, total_time, best_val_acc = train(model, optimizer, train_loader, val_loader, args)
-    train_time_per_epoch = total_time / (best_epoch + 1)
+    total_epochs, total_time, best_val_acc = train(model, optimizer, train_loader, val_loader, args)
+    train_time_per_epoch = total_time / (total_epochs)
     # Test
     test_acc, test_loss = evaluate(model, test_loader, args)
     print(f'Test set results, loss = {test_loss:.6f}, accuracy = {test_acc:.6f}')
@@ -48,26 +46,43 @@ def main():
     model_size_mb = (param_size_bytes + buffer_size) / 1024**2
     model.eval()
     inference_times = []
+    all_labels = []
+    all_preds = []
     with torch.no_grad():
         for data in test_loader:
             data = data.to(args.device)
             torch.cuda.synchronize() if torch.cuda.is_available() else None
             t0 = time.time()
-            _ = model(data)
+            out = model(data)
             torch.cuda.synchronize() if torch.cuda.is_available() else None
             t1 = time.time()
-            inference_times.append((t1 - t0) * 1000)  # ms
+            batch_size = data.y.shape[0]  # number of graphs in this batch
+            inference_times.append((t1 - t0) / batch_size * 1000)  # ms per graph
+            pred = out.argmax(dim=1).detach().cpu().numpy()
+            all_preds.append(pred)
+            all_labels.append(data.y.cpu().numpy())
     inference_latency_ms = float(np.mean(inference_times)) if inference_times else 0.0
-    # Save metrics
+    all_preds = np.concatenate(all_preds).ravel()
+    all_labels = np.concatenate(all_labels).ravel()
+    balanced_accuracy = balanced_accuracy_score(all_labels, all_preds)
+    accuracy = accuracy_score(all_labels, all_preds)
+    precision = precision_score(all_labels, all_preds)
+    recall = recall_score(all_labels, all_preds)
+    f1 = f1_score(all_labels, all_preds)
     metrics = {
-        'Accuracy': test_acc,
-        'NumEpochs': best_epoch + 1,
+        'BalancedAccuracy': balanced_accuracy,
+        'Accuracy': accuracy,
+        'Precision': precision,
+        'Recall': recall,
+        'F1': f1,
+        'NumEpochs': total_epochs,
         'TrainingTimeTotal': total_time,
         'TrainingTimePerEpoch': train_time_per_epoch,
         'PeakMemoryMB': peak_memory,
         'NumberOfParameters': num_params,
         'ModelSizeMB': model_size_mb,
         'InferenceLatencyMS': inference_latency_ms
+
     }
     with open('metrics.json', 'w') as f:
         json.dump(metrics, f, indent=4)
