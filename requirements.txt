@@ -7,3 +7,4 @@ torch-geometric
 networkx
 matplotlib
 seaborn
+torch_scatter
